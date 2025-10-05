@@ -6,8 +6,12 @@ import { Centre } from '../../centres/entities/centre.entity';
 import { CreateMagasinDto } from '../dto/create-magasin.dto';
 import { UpdateMagasinDto } from '../dto/update-magasin.dto';
 import { PaginationQuery } from 'src/shared/interfaces/pagination-query.interface';
-import { PaginationResult } from 'src/shared/interfaces/pagination-result.interface';
 import { CollecteMagasin } from 'src/modules/collecte/entities/collecte-magasin.entity';
+import { FilesService } from '../../files/files.service';
+
+// Extrait le blobName depuis une URL de type http://127.0.0.1:10000/devstoreaccount1/magasins/<blobName>
+
+
 
 /**
  * MagasinsService
@@ -20,6 +24,7 @@ export class MagasinsService {
     @InjectRepository(Magasin) private readonly repo: Repository<Magasin>,
    @InjectRepository(CollecteMagasin) private readonly collecteMagasinRepo: Repository<CollecteMagasin>,
     @InjectRepository(Centre) private readonly centres: Repository<Centre>,
+     private readonly files: FilesService, // ✅ ici
   ) {}
 
 
@@ -140,4 +145,14 @@ async bulkToggleCollecte(
     relations: ['collectes', 'collectes.collecte'],
   });
 }
+
+ async uploadMagasinImage(id: number, file: Express.Multer.File): Promise<Magasin> {
+  const magasin = await this.repo.findOneByOrFail({ id });
+  const { url, blobName } = await this.files.uploadImage(file);
+  magasin.imageUrl = url;
+  magasin.blobName = blobName; // <-- stocke le nom du blob
+  return this.repo.save(magasin);
+}
+
+  
 }

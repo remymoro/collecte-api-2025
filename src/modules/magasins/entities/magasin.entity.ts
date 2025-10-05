@@ -31,6 +31,12 @@ export class Magasin {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  @Column({ nullable: true })
+  imageUrl?: string;
+
+  @Column({ nullable: true, length: 200 })
+  blobName?: string;
+
   @DeleteDateColumn({ nullable: true })
   deletedAt?: Date | null;
 

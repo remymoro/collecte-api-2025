@@ -202,7 +202,7 @@ describe('CentresService', () => {
   // remove()
   // ---------------------------------------------------------------------------
   it('remove(): soft delete OK', async () => {
-    centreRepo.softDelete.mockResolvedValue({ affected: 1 }); // suppression OK
+    (centreRepo.softDelete as jest.Mock).mockResolvedValue({ affected: 1 }); // suppression OK
 
     const res = await service.remove(1);
 

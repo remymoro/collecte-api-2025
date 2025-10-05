@@ -10,7 +10,7 @@ export type RepoMock<T = any> = {
   softDelete: jest.Mock<Promise<T>, any>; // <-- added line
 };
 
-export function createRepoMock<T>(): RepoMock<T> {
+export function createRepoMock<T>() {
   return {
     find:       jest.fn(),
     findOne:    jest.fn(),
@@ -18,7 +18,7 @@ export function createRepoMock<T>(): RepoMock<T> {
     save:       jest.fn(),
     create:     jest.fn(),
     exist:      jest.fn(),        // <-- added line
-    softDelete: jest.fn() as jest.Mock<Promise<{ affected: number }>, [any]>,       // <-- added line
+    softDelete: jest.fn() as jest.Mock<Promise<{ affected: number }>, [any]>,
     softRemove: jest.fn(),
     delete:     jest.fn(),
   } as any;
