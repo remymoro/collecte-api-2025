@@ -16,4 +16,4 @@ jobs:
         with:
           node-version: '20'
       - run: npm ci
-     - run: npm run test -- src/modules/centres src/modules/collecte src/modules/magasins
+      - run: npm run test -- src/modules/centres src/modules/collecte src/modules/magasins
