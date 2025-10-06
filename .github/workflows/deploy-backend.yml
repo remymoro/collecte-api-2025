@@ -1,0 +1,67 @@
+name: Deploy NestJS to Azure Container Apps
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  AZURE_TENANT_ID:       ${{ secrets.AZURE_TENANT_ID }}
+  AZURE_CLIENT_ID:       ${{ secrets.AZURE_CLIENT_ID }}
+
+  RESOURCE_GROUP:        rg-restos-2025
+  ACR_NAME:              restosacr
+  CONTAINERAPP_NAME:     restos-back
+  CONTAINERAPP_ENV:      restos-env
+  DOCKER_CONTEXT:        .
+  DOCKERFILE_PATH:       ./Dockerfile
+  IMAGE_NAME:            backend
+  LOCATION:              westeurope
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm ci
+      - run: npm run build
+      - run: npm test -- --ci --coverage --passWithNoTests
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build & push Docker image to ACR
+        run: |
+          az acr login --name $ACR_NAME
+          docker build -f $DOCKERFILE_PATH -t $ACR_NAME.azurecr.io/$IMAGE_NAME:${{ github.sha }} $DOCKER_CONTEXT
+          docker push $ACR_NAME.azurecr.io/$IMAGE_NAME:${{ github.sha }}
+
+      - name: Deploy to Azure Container Apps
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          containerAppName: ${{ env.CONTAINERAPP_NAME }}
+          resourceGroup:    ${{ env.RESOURCE_GROUP }}
+          imageToDeploy:    ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          containerAppEnvironment: ${{ env.CONTAINERAPP_ENV }}
+          location: ${{ env.LOCATION }}
+          ingress: external
+          targetPort: 3000
+          envVars: |
+            NODE_ENV=production,PORT=3000
