@@ -61,4 +61,8 @@ jobs:
           resourceGroup:    ${{ env.RESOURCE_GROUP }}
           imageToDeploy:    ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
           containerAppEnvironment: ${{ env.CONTAINERAPP_ENV }}
-          locati
+          location: ${{ env.LOCATION }}
+          ingress: external
+          targetPort: 3000
+          envVars: |
+            NODE_ENV=production,PORT=3000
