@@ -18,7 +18,7 @@ env:
   ACR_NAME:              restosacr
   CONTAINERAPP_NAME:     restos-back
   CONTAINERAPP_ENV:      restos-env
-  DOCKER_CONTEXT:        .
+  BUILD_CONTEXT:         .          # ⬅️ remplace DOCKER_CONTEXT
   DOCKERFILE_PATH:       ./Dockerfile
   IMAGE_NAME:            backend
   LOCATION:              westeurope
@@ -26,7 +26,7 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
-    continue-on-error: true   # 👈 rend le job non bloquant
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -51,7 +51,7 @@ jobs:
       - name: Build & push Docker image to ACR
         run: |
           az acr login --name $ACR_NAME
-          docker build -f $DOCKERFILE_PATH -t $ACR_NAME.azurecr.io/$IMAGE_NAME:${{ github.sha }} $DOCKER_CONTEXT
+          docker build -f $DOCKERFILE_PATH -t $ACR_NAME.azurecr.io/$IMAGE_NAME:${{ github.sha }} $BUILD_CONTEXT
           docker push $ACR_NAME.azurecr.io/$IMAGE_NAME:${{ github.sha }}
 
       - name: Deploy to Azure Container Apps
