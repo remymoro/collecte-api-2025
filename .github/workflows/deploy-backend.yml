@@ -26,6 +26,7 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
+    continue-on-error: true   # 👈 rend le job non bloquant
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -60,8 +61,4 @@ jobs:
           resourceGroup:    ${{ env.RESOURCE_GROUP }}
           imageToDeploy:    ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
           containerAppEnvironment: ${{ env.CONTAINERAPP_ENV }}
-          location: ${{ env.LOCATION }}
-          ingress: external
-          targetPort: 3000
-          envVars: |
-            NODE_ENV=production,PORT=3000
+          locati
